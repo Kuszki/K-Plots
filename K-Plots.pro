@@ -24,14 +24,41 @@ TARGET		=	K-Plots
 TEMPLATE		=	app
 CONFIG		+=	c++14
 
+DEFINES		+=	USING_BOOST USING_QT
+
+
 SOURCES		+=	main.cpp \
-				mainwindow.cpp
+				mainwindow.cpp \
+				variableswidget.cpp \
+				variablesdialog.cpp \
+				aboutdialog.cpp \
+				titlewidget.cpp \
+				functionswidget.cpp \
+				functionsdialog.cpp \
+				plotslistwidget.cpp
 
-HEADERS		+=	mainwindow.hpp
+HEADERS		+=	mainwindow.hpp \
+				variableswidget.hpp \
+				variablesdialog.hpp \
+				aboutdialog.hpp \
+				titlewidget.hpp \
+				functionswidget.hpp \
+				functionsdialog.hpp \
+				plotslistwidget.hpp
 
-FORMS		+=	mainwindow.ui
+FORMS		+=	mainwindow.ui \
+				variableswidget.ui \
+				variablesdialog.ui \
+				aboutdialog.ui \
+				titlewidget.ui \
+				functionswidget.ui \
+				functionsdialog.ui \
+				plotslistwidget.ui
 
+LIBS			+=	-L$$PWD/../build-KLLibs -lkllibs
 LIBS			+=	-lqcustomplot
+
+INCLUDEPATH	+=	$$PWD/../KLLibs
 
 TRANSLATIONS	+=	k-plots_pl.ts
 

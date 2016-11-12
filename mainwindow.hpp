@@ -21,7 +21,19 @@
 #ifndef MAINWINDOW_HPP
 #define MAINWINDOW_HPP
 
+#define VARDUMP(V) \
+	for (const auto* Space = &V; Space; Space = Space->Parent) \
+	for (const auto& Var : *Space) qDebug() << Var.Index << "=" << Var.Value.ToNumber();
+
+#include <boost/bind.hpp>
+
+#include <KLLibs.hpp>
+
 #include <QMainWindow>
+#include <QSettings>
+#include <QDebug>
+
+#include "titlewidget.hpp"
 
 namespace Ui
 {
@@ -35,12 +47,26 @@ class MainWindow : public QMainWindow
 
 	private:
 
+		KLMap<KLString, KLString> Functions;
+		KLVariables Variables;
+
 		Ui::MainWindow* ui;
 
 	public:
 
 		explicit MainWindow(QWidget* Parent = nullptr);
 		virtual ~MainWindow(void) override;
+
+	private slots:
+
+		void AddVariable(const QString& Name, double Value);
+		void EditVariable(const QString& Name, double Value);
+		void RenameVariable(const QString& Old, const QString& New);
+		void RemoveVariable(const QString& Name);
+
+		void AddFunction(const QString& Name, const QString& Code);
+		void EditFunction(const QString& Name, const QString& Code);
+		void RemoveFunction(const QString& Name);
 
 };
 

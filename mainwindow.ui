@@ -1,24 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow" >
-  <property name="geometry" >
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>800</width>
+    <height>600</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>MainWindow</string>
   </property>
-  <widget class="QMenuBar" name="menuBar" />
-  <widget class="QToolBar" name="mainToolBar" />
-  <widget class="QWidget" name="centralWidget" />
-  <widget class="QStatusBar" name="statusBar" />
+  <property name="documentMode">
+   <bool>true</bool>
+  </property>
+  <property name="dockNestingEnabled">
+   <bool>true</bool>
+  </property>
+  <widget class="QWidget" name="centralWidget"/>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QDockWidget" name="variablesDock">
+   <property name="windowTitle">
+    <string>Variables</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="VariablesWidget" name="variablesWidget"/>
+  </widget>
+  <widget class="QDockWidget" name="functionsDock">
+   <property name="windowTitle">
+    <string>Functions</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="FunctionsWidget" name="functionsWidget"/>
+  </widget>
+  <widget class="QDockWidget" name="plotslistDock">
+   <property name="windowTitle">
+    <string>Plots</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="PlotslistWidget" name="plotslistWidget"/>
+  </widget>
+  <widget class="QDockWidget" name="plotDock">
+   <property name="windowTitle">
+    <string>Plot</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="plotWidget"/>
+  </widget>
  </widget>
- <layoutDefault spacing="6" margin="11" />
- <pixmapfunction></pixmapfunction>
+ <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>VariablesWidget</class>
+   <extends>QWidget</extends>
+   <header>variableswidget.hpp</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>FunctionsWidget</class>
+   <extends>QWidget</extends>
+   <header>functionswidget.hpp</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PlotslistWidget</class>
+   <extends>QWidget</extends>
+   <header>plotslistwidget.hpp</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
