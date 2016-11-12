@@ -55,6 +55,8 @@ FORMS		+=	mainwindow.ui \
 				functionsdialog.ui \
 				plotslistwidget.ui
 
+RESOURCES		+=	resources.qrc
+
 LIBS			+=	-L$$PWD/../build-KLLibs -lkllibs
 LIBS			+=	-lqcustomplot
 
