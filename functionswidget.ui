@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>FunctionsWidget</class>
+ <widget class="QWidget" name="FunctionsWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <widget class="QListWidget" name="Functions">
+     <property name="dragEnabled">
+      <bool>true</bool>
+     </property>
+     <property name="sortingEnabled">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <layout class="QHBoxLayout" name="toolsLayout">
+     <item>
+      <widget class="QLineEdit" name="lineEdit">
+       <property name="placeholderText">
+        <string>Search</string>
+       </property>
+       <property name="clearButtonEnabled">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="rightSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QToolButton" name="removeButton">
+       <property name="icon">
+        <iconset theme="list-remove">
+         <normaloff>.</normaloff>.</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="addButton">
+       <property name="icon">
+        <iconset theme="list-add">
+         <normaloff>.</normaloff>.</iconset>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>addButton</sender>
+   <signal>clicked()</signal>
+   <receiver>FunctionsWidget</receiver>
+   <slot>AddButtonClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>378</x>
+     <y>281</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>640</x>
+     <y>281</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>removeButton</sender>
+   <signal>clicked()</signal>
+   <receiver>FunctionsWidget</receiver>
+   <slot>RemoveButtonClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>350</x>
+     <y>272</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>420</x>
+     <y>418</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>lineEdit</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>FunctionsWidget</receiver>
+   <slot>SearchEditChanged(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>51</x>
+     <y>273</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>139</x>
+     <y>485</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>Functions</sender>
+   <signal>itemDoubleClicked(QListWidgetItem*)</signal>
+   <receiver>FunctionsWidget</receiver>
+   <slot>ListItemChanged(QListWidgetItem*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>334</x>
+     <y>135</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>586</x>
+     <y>135</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>AddButtonClicked()</slot>
+  <slot>RemoveButtonClicked()</slot>
+  <slot>SearchEditChanged(QString)</slot>
+  <slot>ListItemChanged(QListWidgetItem*)</slot>
+ </slots>
+</ui>
