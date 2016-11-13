@@ -35,7 +35,8 @@ SOURCES		+=	main.cpp \
 				titlewidget.cpp \
 				functionswidget.cpp \
 				functionsdialog.cpp \
-				plotslistwidget.cpp
+				plotslistwidget.cpp \
+				chartwidget.cpp
 
 HEADERS		+=	mainwindow.hpp \
 				variableswidget.hpp \
@@ -44,7 +45,8 @@ HEADERS		+=	mainwindow.hpp \
 				titlewidget.hpp \
 				functionswidget.hpp \
 				functionsdialog.hpp \
-				plotslistwidget.hpp
+				plotslistwidget.hpp \
+				chartwidget.hpp
 
 FORMS		+=	mainwindow.ui \
 				variableswidget.ui \
@@ -53,7 +55,8 @@ FORMS		+=	mainwindow.ui \
 				titlewidget.ui \
 				functionswidget.ui \
 				functionsdialog.ui \
-				plotslistwidget.ui
+				plotslistwidget.ui \
+				chartwidget.ui
 
 RESOURCES		+=	resources.qrc
 
