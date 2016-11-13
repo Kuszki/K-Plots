@@ -29,11 +29,15 @@
 
 #include <KLLibs.hpp>
 
+#include <QDoubleSpinBox>
 #include <QMainWindow>
 #include <QSettings>
+#include <QSpinBox>
 #include <QDebug>
 
 #include "titlewidget.hpp"
+#include "chartwidget.hpp"
+#include "aboutdialog.hpp"
 
 namespace Ui
 {
@@ -48,7 +52,14 @@ class MainWindow : public QMainWindow
 	private:
 
 		KLMap<KLString, KLString> Functions;
+		QList<QDockWidget*> Plots;
 		KLVariables Variables;
+
+		QDoubleSpinBox* Start;
+		QDoubleSpinBox* Stop;
+		QSpinBox* Samples;
+
+		AboutDialog* About;
 
 		Ui::MainWindow* ui;
 
@@ -59,6 +70,9 @@ class MainWindow : public QMainWindow
 
 	private slots:
 
+		void PlotSamplesChanged(int Count);
+		void PlotRangeChanged(void);
+
 		void AddVariable(const QString& Name, double Value);
 		void EditVariable(const QString& Name, double Value);
 		void RenameVariable(const QString& Old, const QString& New);
@@ -67,6 +81,20 @@ class MainWindow : public QMainWindow
 		void AddFunction(const QString& Name, const QString& Code);
 		void EditFunction(const QString& Name, const QString& Code);
 		void RemoveFunction(const QString& Name);
+
+		void AddPlot(const QString& Name);
+		void RenamePlot(const QString& Old, const QString& New);
+		void RemovePlot(const QString& Name);
+
+		void AddChart(const QString& Plot, const QString& Function);
+		void RemoveChart(const QString& Plot, const QString& Function);
+
+	signals:
+
+		void onReplotRequest(void);
+
+		void onRangeChanged(double, double);
+		void onSamplesChanged(int);
 
 };
 
