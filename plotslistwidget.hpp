@@ -69,13 +69,19 @@ class PlotslistWidget : public QWidget
 
 		void TreeItemChanged(QTreeWidgetItem* Item);
 
+		void SearchEditChanged(const QString& Text);
+
 		void AddButtonClicked(void);
 		void RemoveButtonClicked(void);
 
 	public slots:
 
-		void AddPlot(const QString& Name);
 		void AddChart(const QString& Plot, const QString& Name);
+
+		void AddPlot(const QString& Name);
+		void RemovePlot(const QString& Name);
+
+		void RemoveFunction(const QString& Function);
 
 	signals:
 

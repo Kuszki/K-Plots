@@ -20,11 +20,13 @@
 
 #include "plotslistwidget.hpp"
 #include "ui_plotslistwidget.h"
-#include <QDebug>
+
 PlotslistWidget::PlotslistWidget(const VALIDATOR& Bind, QWidget* Parent)
 : QWidget(Parent), ui(new Ui::PlotslistWidget), Validator(Bind)
 {
 	ui->setupUi(this);
+
+	ui->rightSpacer->changeSize(ui->addButton->sizeHint().width(), 0);
 
 	setAcceptDrops(true);
 }
@@ -64,8 +66,7 @@ void PlotslistWidget::dropEvent(QDropEvent* Event)
 			Item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
 			Item->setText(0, Function);
 
-			Parent->addChild(Item); qDebug() << "adding chart" << Function << "to" << Parent->text(0);
-
+			Parent->addChild(Item);
 			Event->accept();
 
 			emit onAddChart(Parent->text(0), Function);
@@ -98,7 +99,7 @@ void PlotslistWidget::ResetValidator(void)
 
 void PlotslistWidget::TreeItemChanged(QTreeWidgetItem* Item)
 {
-	if (Validator(Item->text(0)))
+	if (!Item->text(0).isEmpty() && Validator(Item->text(0)))
 	{
 		emit onRenamePlot(Item->data(0, Qt::UserRole).toString(), Item->text(0));
 
@@ -108,6 +109,28 @@ void PlotslistWidget::TreeItemChanged(QTreeWidgetItem* Item)
 	{
 		Item->setText(0, Item->data(0, Qt::UserRole).toString());
 	}
+}
+
+void PlotslistWidget::SearchEditChanged(const QString& Text)
+{
+	if (Text.size()) for (int i = 0; i < ui->Plots->topLevelItemCount(); ++i)
+	{
+		QTreeWidgetItem* Item = ui->Plots->topLevelItem(i);
+
+		bool Match = Item->text(0).contains(Text, Qt::CaseInsensitive);
+
+		if (!Match) for (int j = 0; j < Item->childCount(); ++j)
+		{
+			bool Child = Item->child(j)->text(0).contains(Text, Qt::CaseInsensitive);
+
+			Item->child(j)->setHidden(!Child);
+
+			if (Child) Match = true;
+		}
+
+		Item->setHidden(!Match);
+	}
+	else for (int i = 0; i < ui->Plots->topLevelItemCount(); ++i) ui->Plots->topLevelItem(i)->setHidden(false);
 }
 
 void PlotslistWidget::AddButtonClicked(void)
@@ -125,14 +148,12 @@ void PlotslistWidget::RemoveButtonClicked(void)
 
 	if (QTreeWidgetItem* Parent = Item->parent())
 	{
-		emit onRemoveChart(Parent->text(0), Item->text(0));
+		emit onRemoveChart(Parent->text(0), Item->text(0)); delete Item;
 	}
-	else
+	else if (ui->Plots->topLevelItemCount() > 1)
 	{
-		emit onRemovePlot(Item->text(0));
+		emit onRemovePlot(Item->text(0)); delete Item;
 	}
-
-	delete Item;
 }
 
 void PlotslistWidget::AddPlot(const QString& Name)
@@ -147,6 +168,29 @@ void PlotslistWidget::AddPlot(const QString& Name)
 	ui->Plots->sortByColumn(0, Qt::AscendingOrder);
 
 	emit onAddPlot(Name);
+}
+
+void PlotslistWidget::RemovePlot(const QString& Name)
+{
+	for (auto Item : ui->Plots->findItems(Name, Qt::MatchExactly)) delete Item;
+}
+
+void PlotslistWidget::RemoveFunction(const QString& Function)
+{
+	for (int i = 0; i < ui->Plots->topLevelItemCount(); ++i)
+	{
+		QTreeWidgetItem* Parent = ui->Plots->topLevelItem(i);
+		QList<QTreeWidgetItem*> Items;
+
+		for (int j = 0; j < Parent->childCount(); ++j)
+		{
+			QTreeWidgetItem* Item = Parent->child(j);
+
+			if (Item->text(0) == Function) Items.append(Item);
+		}
+
+		for (auto Item : Items) delete Item;
+	}
 }
 
 void PlotslistWidget::AddChart(const QString& Plot, const QString& Name)
