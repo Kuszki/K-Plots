@@ -62,7 +62,7 @@ void VariablesWidget::ListItemChanged(QTableWidgetItem* Item)
 	const int Col = Item->column();
 	const int Row = Item->row();
 
-	const QString Name = ui->Variables->item(Row, Col)->text();
+	const QString Name = ui->Variables->item(Row, 0)->text();
 
 	if (Col == 1)
 	{
