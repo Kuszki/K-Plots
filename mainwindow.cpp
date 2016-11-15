@@ -114,6 +114,7 @@ MainWindow::MainWindow(QWidget* Parent)
 	connect(ui->functionsWidget, &FunctionsWidget::onRemoveFunction, this, &MainWindow::RemoveFunction);
 
 	connect(ui->plotslistWidget, &PlotslistWidget::onAddPlot, this, &MainWindow::AddPlot);
+	connect(ui->plotslistWidget, &PlotslistWidget::onAddChart, this, &MainWindow::AddChart);
 	connect(ui->plotslistWidget, &PlotslistWidget::onRenamePlot, this, &MainWindow::RenamePlot);
 	connect(ui->plotslistWidget, &PlotslistWidget::onRemovePlot, this, &MainWindow::RemovePlot);
 	connect(ui->plotslistWidget, &PlotslistWidget::onRemoveChart, this, &MainWindow::RemoveChart);
