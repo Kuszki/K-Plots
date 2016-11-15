@@ -51,15 +51,12 @@ const boost::function<ChartWidget::RESULT (KLScript*, QString, double, double, u
 	{
 		Script->Variables["dt"] = dt; t = Start;
 
-		while (t.ToNumber() < Stop)
+		while (t.ToNumber() < Stop) if (!Script->Evaluate(Run)) return false;
+		else
 		{
-			if (Script->Evaluate(Run)) return false;
-			else
-			{
-				Result.Arguments.append(t.ToNumber());
-				Result.Values.append(Script->GetReturn());
-				ChartWidget::fitValue(Result.Values.last());
-			}
+			Result.Arguments.append(t.ToNumber());
+			Result.Values.append(Script->GetReturn());
+			ChartWidget::fitValue(Result.Values.last());
 
 			t = t.ToNumber() + dt;
 		}
