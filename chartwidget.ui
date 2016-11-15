@@ -20,21 +20,23 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
-    <widget class="QCustomPlot" name="Plot" native="true"/>
-   </item>
    <item row="1" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QComboBox" name="typeCombo">
        <item>
         <property name="text">
-         <string>Plot functions</string>
+         <string>Plot function</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>Plot integrals</string>
+         <string>Plot integral</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Plot derivative</string>
         </property>
        </item>
        <item>
@@ -45,9 +47,29 @@
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="checkBox">
+      <widget class="QCheckBox" name="legendBox">
        <property name="text">
         <string>Show legend</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="xrangeCheck">
+       <property name="text">
+        <string>Zoom X</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="yrangeCheck">
+       <property name="text">
+        <string>Zoom Y</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -80,7 +102,18 @@
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QToolButton" name="scaleButton">
+       <property name="icon">
+        <iconset theme="zoom-original">
+         <normaloff>.</normaloff>.</iconset>
+       </property>
+      </widget>
+     </item>
     </layout>
+   </item>
+   <item row="0" column="0">
+    <widget class="QCustomPlot" name="Plot" native="true"/>
    </item>
   </layout>
  </widget>
@@ -95,7 +128,7 @@
  <resources/>
  <connections>
   <connection>
-   <sender>checkBox</sender>
+   <sender>legendBox</sender>
    <signal>toggled(bool)</signal>
    <receiver>ChartWidget</receiver>
    <slot>LegendCheckChanged(bool)</slot>
@@ -117,8 +150,8 @@
    <slot>FitButtonClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>480</x>
-     <y>224</y>
+     <x>459</x>
+     <y>232</y>
     </hint>
     <hint type="destinationlabel">
      <x>703</x>
@@ -133,8 +166,8 @@
    <slot>SaveButtonClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>448</x>
-     <y>225</y>
+     <x>429</x>
+     <y>232</y>
     </hint>
     <hint type="destinationlabel">
      <x>446</x>
@@ -158,11 +191,78 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>scaleButton</sender>
+   <signal>clicked()</signal>
+   <receiver>ChartWidget</receiver>
+   <slot>ZoomButtonClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>482</x>
+     <y>221</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>663</x>
+     <y>475</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>legendBox</sender>
+   <signal>clicked()</signal>
+   <receiver>ChartWidget</receiver>
+   <slot>ZoomCheckChanged()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>210</x>
+     <y>218</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>210</x>
+     <y>349</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>xrangeCheck</sender>
+   <signal>clicked()</signal>
+   <receiver>ChartWidget</receiver>
+   <slot>ZoomCheckChanged()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>275</x>
+     <y>222</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>275</x>
+     <y>381</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>yrangeCheck</sender>
+   <signal>clicked()</signal>
+   <receiver>ChartWidget</receiver>
+   <slot>ZoomCheckChanged()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>337</x>
+     <y>225</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>339</x>
+     <y>493</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>LegendCheckChanged(bool)</slot>
   <slot>FitButtonClicked()</slot>
   <slot>SaveButtonClicked()</slot>
   <slot>PlotTypeChanged(int)</slot>
+  <slot>ZoomButtonClicked()</slot>
+  <slot>ZoomCheckChanged()</slot>
+  <slot>ZoomyCheckChanged(bool)</slot>
  </slots>
 </ui>

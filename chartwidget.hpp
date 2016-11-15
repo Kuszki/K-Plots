@@ -31,6 +31,7 @@
 
 #include <QListWidget>
 #include <QWidget>
+#include <QThread>
 
 namespace Ui
 {
@@ -48,6 +49,7 @@ class ChartWidget : public QWidget
 
 		QVector<double> Values;
 		QVector<double> Integrals;
+		QVector<double> Derivatives;
 		QVector<double> Arguments;
 	};
 
@@ -55,7 +57,8 @@ class ChartWidget : public QWidget
 	{
 		QCPGraph* Values = nullptr;
 		QCPGraph* Integrals = nullptr;
-		QCPBars* Spectrum = nullptr;
+		QCPGraph* Derivatives = nullptr;
+		QCPGraph* Spectrum = nullptr;
 	};
 
 	private:
@@ -65,6 +68,9 @@ class ChartWidget : public QWidget
 		const KLMap<KLString, KLString>* Functions = nullptr;
 		const KLVariables* Variables = nullptr;
 
+		Ui::ChartWidget* ui;
+
+		QVector<QColor> Colors;
 		QMap<QString, CHART> Plots;
 		QList<QString> Charts;
 
@@ -72,13 +78,13 @@ class ChartWidget : public QWidget
 		double Start;
 		double Stop;
 
-		Ui::ChartWidget* ui;
-
 	private:
 
 		virtual void dragEnterEvent(QDragEnterEvent* Event) override;
 		virtual void dragMoveEvent(QDragMoveEvent* Event) override;
 		virtual void dropEvent(QDropEvent* Event) override;
+
+		void deletePlotable(const CHART& Plotable);
 
 	public:
 
@@ -108,7 +114,9 @@ class ChartWidget : public QWidget
 		void PlotTypeChanged(int Type);
 
 		void SaveButtonClicked(void);
+		void ZoomButtonClicked(void);
 		void FitButtonClicked(void);
+		void ZoomCheckChanged(void);
 
 	signals:
 

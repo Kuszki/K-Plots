@@ -26,46 +26,100 @@ const boost::function<ChartWidget::RESULT (KLScript*, QString, double, double, u
 {
 	const KLString Run = QString("goto %1 t;").arg(Function).toStdString().c_str();
 
+	QFutureWatcher<bool> valuesWatcher;
+	QThread watchdogThread;
+	QTimer Watchdog;
+
+	valuesWatcher.moveToThread(&watchdogThread);
+	Watchdog.moveToThread(&watchdogThread);
+	watchdogThread.start();
+
+	ChartWidget::RESULT Result;
+	Result.Function = Function;
+	Result.Arguments.reserve(Samples);
+	Result.Integrals.reserve(Samples);
+	Result.Derivatives.reserve(Samples);
+
 	auto& t = Script->Variables["t"];
 	double dt = double(Stop - Start) / Samples;
 
-	ChartWidget::RESULT Result; t = Start;
+	QObject::connect(&valuesWatcher, &QFutureWatcher<bool>::started, boost::bind(&QTimer::start, &Watchdog, 500));
+	QObject::connect(&valuesWatcher, &QFutureWatcher<bool>::finished, &Watchdog, &QTimer::stop);
+	QObject::connect(&Watchdog, &QTimer::timeout, boost::bind(&KLScript::Terminate, Script));
 
-	Result.Function = Function;
-	Script->Variables["dt"] = dt;
-
-	while (t.ToNumber() < Stop)
+	valuesWatcher.setFuture(QtConcurrent::run([Script, &Result, &Run, &t] (double Start, double Stop, double dt) -> bool
 	{
-		if (!Script->Evaluate(Run)) return Result;
-		else
+		Script->Variables["dt"] = dt; t = Start;
+
+		while (t.ToNumber() < Stop)
 		{
-			Result.Arguments.append(t.ToNumber());
-			Result.Values.append(Script->GetReturn());
+			if (!Script->Evaluate(Run) && Script->GetError() != KLScript::WRONG_EVALUATION) return false;
+			{
+				Result.Arguments.append(t.ToNumber());
+				Result.Values.append(Script->GetReturn());
+
+				if (Result.Values.last() > QCPRange::maxRange) Result.Values.last() = QCPRange::maxRange;
+				else if (Result.Values.last() < -QCPRange::maxRange) Result.Values.last() = -QCPRange::maxRange;
+			}
+
+			t = t.ToNumber() + dt;
 		}
 
-		t = t.ToNumber() + dt;
-	}
+		return true;
+	}, Start, Stop, dt));
 
-	Result.Integrals.append(0);
-
-	for (const auto& V : Result.Values)
+	if (valuesWatcher.result())
 	{
-		Result.Integrals.append(Result.Integrals.last() + V * dt);
+		QFutureSynchronizer<void> Synchronizer;
+
+		Synchronizer.addFuture(QtConcurrent::run([&Result] (double dt) -> void
+		{
+			const int Size = Result.Values.size() - 1;
+			Result.Integrals.append(0);
+
+			for (int i = 0; i < Size; ++i)
+			{
+				Result.Integrals.append(Result.Integrals.last() + Result.Values[i] * dt);
+			}
+		}, dt));
+
+		Synchronizer.addFuture(QtConcurrent::run([&Result] (double dt) -> void
+		{
+			const int Size = Result.Values.size();
+			Result.Derivatives.append(qQNaN());
+
+			for (int i = 1; i < Size; ++i)
+			{
+				Result.Derivatives.append((Result.Values[i] - Result.Values[i - 1]) / dt);
+			}
+		}, dt));
+
+		Synchronizer.waitForFinished();
 	}
 
-	Result.Integrals.removeLast();
+	watchdogThread.exit();
+	watchdogThread.wait();
 
 	delete Script;
 	return Result;
 };
 
 ChartWidget::ChartWidget(QWidget* Parent)
-: QWidget(Parent), ui(new Ui::ChartWidget)
+: QWidget(Parent), ui(new Ui::ChartWidget), Colors(
+{
+	Qt::red, Qt::blue, Qt::green,
+	Qt::darkRed, Qt::darkBlue, Qt::darkGreen,
+	Qt::darkYellow, Qt::darkMagenta, Qt::darkCyan,
+	Qt::yellow, Qt::magenta, Qt::cyan
+})
 {
 	ui->setupUi(this);
 
+	ui->typeCombo->setMinimumWidth(ui->typeCombo->sizeHint().width() + 25);
+
 	ui->Plot->setInteraction(QCP::iRangeDrag, true);
 	ui->Plot->setInteraction(QCP::iRangeZoom, true);
+	ui->Plot->axisRect()->setupFullAxesBox();
 
 	setAcceptDrops(true);
 
@@ -117,14 +171,7 @@ void ChartWidget::RemoveChart(const QString& Function)
 {
 	if (Charts.contains(Function)) Charts.removeAll(Function);
 
-	if (Plots.contains(Function))
-	{
-		auto Data = Plots.take(Function);
-
-		ui->Plot->removePlottable(Data.Integrals);
-		ui->Plot->removePlottable(Data.Spectrum);
-		ui->Plot->removePlottable(Data.Values);
-	}
+	if (Plots.contains(Function)) deletePlotable(Plots.take(Function));
 
 	ui->Plot->replot();
 }
@@ -203,36 +250,55 @@ void ChartWidget::RangeDraged(const QCPRange& New, const QCPRange& Old)
 void ChartWidget::PlotResults(QFutureWatcher<RESULT>* Watcher, int Index)
 {
 	RESULT Result = Watcher->resultAt(Index);
+	QPen Pen = ui->Plot->yAxis->basePen();
 	CHART Data;
 
-	if (Plots.contains(Result.Function))
-	{
-		auto Data = Plots.take(Result.Function);
+	if (Plots.contains(Result.Function)) deletePlotable(Plots.take(Result.Function));
 
-		ui->Plot->removePlottable(Data.Integrals);
-		ui->Plot->removePlottable(Data.Spectrum);
-		ui->Plot->removePlottable(Data.Values);
-	}
+	Pen.setColor(Colors.isEmpty() ? Qt::black : Colors.takeFirst());
 
 	Data.Values = ui->Plot->addGraph(ui->Plot->xAxis, ui->Plot->yAxis);
-
 	Data.Values->setData(Result.Arguments, Result.Values);
 	Data.Values->setName(Result.Function);
+	Data.Values->setPen(Pen);
 
 	Data.Integrals = ui->Plot->addGraph(ui->Plot->xAxis, ui->Plot->yAxis);
-
 	Data.Integrals->setData(Result.Arguments, Result.Integrals);
 	Data.Integrals->setName(Result.Function);
+	Data.Integrals->setPen(Pen);
+
+	Data.Derivatives = ui->Plot->addGraph(ui->Plot->xAxis, ui->Plot->yAxis);
+	Data.Derivatives->setData(Result.Arguments, Result.Derivatives);
+	Data.Derivatives->setName(Result.Function);
+	Data.Derivatives->setPen(Pen);
+
+	Data.Spectrum = ui->Plot->addGraph(ui->Plot->xAxis, ui->Plot->yAxis);
+	//Data.Spectrum->setData(Result.Arguments, Result.Derivatives);
+	Data.Spectrum->setName(Result.Function);
+	Data.Spectrum->setPen(Pen);
 
 	Data.Values->setVisible(ui->typeCombo->currentIndex() == 0);
 	Data.Integrals->setVisible(ui->typeCombo->currentIndex() == 1);
+	Data.Derivatives->setVisible(ui->typeCombo->currentIndex() == 2);
+	Data.Spectrum->setVisible(ui->typeCombo->currentIndex() == 3);
 
-	if (!Data.Values->visible()) Data.Values->removeFromLegend();
-	if (!Data.Integrals->visible()) Data.Integrals->removeFromLegend();
+	Data.Integrals->removeFromLegend();
+	Data.Derivatives->removeFromLegend();
+	Data.Spectrum->removeFromLegend();
 
 	Plots.insert(Result.Function, Data);
 
 	ui->Plot->replot();
+}
+
+void ChartWidget::ZoomCheckChanged(void)
+{
+	Qt::Orientations Orientation;
+
+	if (ui->xrangeCheck->isChecked()) Orientation |=  Qt::Horizontal;
+	if (ui->yrangeCheck->isChecked()) Orientation |=  Qt::Vertical;
+
+	ui->Plot->axisRect()->setRangeZoom(Orientation);
 }
 
 void ChartWidget::PlotTypeChanged(int Type)
@@ -241,12 +307,8 @@ void ChartWidget::PlotTypeChanged(int Type)
 	{
 		Plot.Values->setVisible(Type == 0);
 		Plot.Integrals->setVisible(Type == 1);
-
-		if (!Plot.Values->visible()) Plot.Values->removeFromLegend();
-		else Plot.Values->addToLegend();
-
-		if (!Plot.Integrals->visible()) Plot.Integrals->removeFromLegend();
-		else Plot.Integrals->addToLegend();
+		Plot.Derivatives->setVisible(Type == 2);
+		Plot.Spectrum->setVisible(Type == 3);
 	}
 
 	ui->Plot->replot();
@@ -257,10 +319,25 @@ void ChartWidget::SaveButtonClicked(void)
 
 }
 
-void ChartWidget::FitButtonClicked(void)
+void ChartWidget::ZoomButtonClicked()
 {
+	ui->Plot->xAxis->blockSignals(true);
+
+	ui->Plot->xAxis->rescale(true);
 	ui->Plot->yAxis->rescale(true);
 	ui->Plot->replot();
+
+	ui->Plot->xAxis->blockSignals(false);
+}
+
+void ChartWidget::FitButtonClicked(void)
+{
+	ui->Plot->xAxis->blockSignals(true);
+
+	ui->Plot->yAxis->rescale(true);
+	ui->Plot->replot();
+
+	ui->Plot->xAxis->blockSignals(false);
 }
 
 void ChartWidget::dragEnterEvent(QDragEnterEvent* Event)
@@ -279,4 +356,14 @@ void ChartWidget::dropEvent(QDropEvent* Event)
 	{
 		AddChart(Source->currentItem()->text());
 	}
+}
+
+void ChartWidget::deletePlotable(const CHART& Plotable)
+{
+	if (Plotable.Values->pen().color() != Qt::black) Colors.insert(0, Plotable.Values->pen().color());
+
+	ui->Plot->removePlottable(Plotable.Derivatives);
+	ui->Plot->removePlottable(Plotable.Integrals);
+	ui->Plot->removePlottable(Plotable.Spectrum);
+	ui->Plot->removePlottable(Plotable.Values);
 }
