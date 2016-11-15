@@ -25,6 +25,24 @@
 int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
+
+	a.setApplicationName("K-Plots");
+	a.setOrganizationName("Łukasz \"Kuszki\" Dróżdż");
+	a.setOrganizationDomain("https://github.com/Kuszki");
+	a.setApplicationVersion("1.0");
+
+	QTranslator qtTranslator;
+	qtTranslator.load("qt_" + QLocale::system().name(), QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+	a.installTranslator(&qtTranslator);
+
+	QTranslator baseTranslator;
+	baseTranslator.load("qtbase_" + QLocale::system().name(), QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+	a.installTranslator(&baseTranslator);
+
+	QTranslator appTranslator;
+	appTranslator.load("k-plots_" + QLocale::system().name());
+	a.installTranslator(&appTranslator);
+
 	MainWindow w;
 	w.show();
 
