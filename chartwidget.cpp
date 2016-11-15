@@ -53,13 +53,12 @@ const boost::function<ChartWidget::RESULT (KLScript*, QString, double, double, u
 
 		while (t.ToNumber() < Stop)
 		{
-			if (!Script->Evaluate(Run) && Script->GetError() != KLScript::WRONG_EVALUATION) return false;
+			if (Script->Evaluate(Run)) return false;
+			else
 			{
 				Result.Arguments.append(t.ToNumber());
 				Result.Values.append(Script->GetReturn());
-
-				if (Result.Values.last() > QCPRange::maxRange) Result.Values.last() = QCPRange::maxRange;
-				else if (Result.Values.last() < -QCPRange::maxRange) Result.Values.last() = -QCPRange::maxRange;
+				ChartWidget::fitValue(Result.Values.last());
 			}
 
 			t = t.ToNumber() + dt;
@@ -80,6 +79,7 @@ const boost::function<ChartWidget::RESULT (KLScript*, QString, double, double, u
 			for (int i = 0; i < Size; ++i)
 			{
 				Result.Integrals.append(Result.Integrals.last() + Result.Values[i] * dt);
+				ChartWidget::fitValue(Result.Values.last());
 			}
 		}, dt));
 
@@ -91,6 +91,7 @@ const boost::function<ChartWidget::RESULT (KLScript*, QString, double, double, u
 			for (int i = 1; i < Size; ++i)
 			{
 				Result.Derivatives.append((Result.Values[i] - Result.Values[i - 1]) / dt);
+				ChartWidget::fitValue(Result.Values.last());
 			}
 		}, dt));
 
@@ -366,4 +367,10 @@ void ChartWidget::deletePlotable(const CHART& Plotable)
 	ui->Plot->removePlottable(Plotable.Integrals);
 	ui->Plot->removePlottable(Plotable.Spectrum);
 	ui->Plot->removePlottable(Plotable.Values);
+}
+
+void ChartWidget::fitValue(double& Value)
+{
+	if (Value > QCPRange::maxRange) Value = QCPRange::maxRange;
+	else if (Value < -QCPRange::maxRange) Value = -QCPRange::maxRange;
 }

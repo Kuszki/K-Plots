@@ -94,6 +94,8 @@ class ChartWidget : public QWidget
 		void SetScriptParams(const KLVariables* V, const KLMap<KLString, KLString>* F);
 		void SetPlotParams(double From, double To, unsigned Steps);
 
+		static void fitValue(double& Value);
+
 	public slots:
 
 		void AddChart(const QString& Function);
