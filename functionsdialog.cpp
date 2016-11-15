@@ -75,7 +75,7 @@ void FunctionsDialog::accept(void)
 	const QString Name = ui->Name->text();
 	const QString Code = ui->Code->document()->toPlainText();
 
-	QString Message = Validator(Name, Code, true);
+	QString Message = Validator(Name, Code, !ui->Name->isEnabled());
 
 	if (Message.isEmpty())
 	{
