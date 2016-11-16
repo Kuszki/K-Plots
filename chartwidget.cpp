@@ -37,21 +37,20 @@ const boost::function<ChartWidget::RESULT (KLScript*, QString, double, double, u
 	ChartWidget::RESULT Result;
 	Result.Function = Function;
 	Result.Arguments.reserve(Samples);
-	Result.Integrals.reserve(Samples);
-	Result.Derivatives.reserve(Samples);
+	Result.Values.reserve(Samples);
 
 	auto& t = Script->Variables["t"];
-	double dt = double(Stop - Start) / Samples;
+	double dt = double(Stop - Start) / (Samples - 1);
 
 	QObject::connect(&valuesWatcher, &QFutureWatcher<bool>::started, boost::bind(&QTimer::start, &Watchdog, 500));
 	QObject::connect(&valuesWatcher, &QFutureWatcher<bool>::finished, &Watchdog, &QTimer::stop);
 	QObject::connect(&Watchdog, &QTimer::timeout, boost::bind(&KLScript::Terminate, Script));
 
-	valuesWatcher.setFuture(QtConcurrent::run([Script, &Result, &Run, &t] (double Start, double Stop, double dt) -> bool
+	valuesWatcher.setFuture(QtConcurrent::run([Script, &Result, &Run, &t] (double Start, int Samples, double dt) -> bool
 	{
 		Script->Variables["dt"] = dt; t = Start;
 
-		while (t.ToNumber() < Stop) if (!Script->Evaluate(Run)) return false;
+		for (int i = 0; i < Samples; ++i) if (!Script->Evaluate(Run)) return false;
 		else
 		{
 			Result.Arguments.append(t.ToNumber());
@@ -62,7 +61,12 @@ const boost::function<ChartWidget::RESULT (KLScript*, QString, double, double, u
 		}
 
 		return true;
-	}, Start, Stop, dt));
+	}, Start, Samples, dt));
+
+	Result.Integrals.reserve(Samples);
+	Result.Derivatives.reserve(Samples);
+	Result.Transform.reserve(Samples);
+	Result.Freqargs.reserve(Samples);
 
 	if (valuesWatcher.result())
 	{
@@ -91,6 +95,28 @@ const boost::function<ChartWidget::RESULT (KLScript*, QString, double, double, u
 				ChartWidget::fitValue(Result.Values.last());
 			}
 		}, dt));
+
+		{
+
+			const int Size = Result.Values.size();
+			fftw_complex* Complex = fftw_alloc_complex(Size);
+			fftw_plan Plan = fftw_plan_dft_r2c_1d(Size, &Result.Values.first(), Complex, FFTW_ESTIMATE);
+
+			fftw_execute(Plan);
+
+			for (int i = 0; i < Size / 2 + 1; ++i)
+			{
+				const double Value = 2.0 * qSqrt(Complex[i][0] * Complex[i][0] + Complex[i][1] * Complex[i][1]) / Samples;
+
+				Result.Transform.append(Value);
+				Result.Freqargs.append(i / (dt * Samples));
+			}
+
+			Result.Transform.first() /= 2;
+			fftw_destroy_plan(Plan);
+			fftw_free(Complex);
+
+		}
 
 		Synchronizer.waitForFinished();
 	}
@@ -122,6 +148,7 @@ ChartWidget::ChartWidget(QWidget* Parent)
 	setAcceptDrops(true);
 
 	connect(ui->Plot->xAxis, SIGNAL(rangeChanged(QCPRange,QCPRange)), SLOT(RangeDraged(QCPRange,QCPRange)));
+	connect(ui->Plot->yAxis, SIGNAL(rangeChanged(QCPRange,QCPRange)), SLOT(ValueDraged(QCPRange,QCPRange)));
 }
 
 ChartWidget::~ChartWidget(void)
@@ -183,8 +210,17 @@ void ChartWidget::RangeChanged(double From, double To)
 
 	ui->Plot->xAxis->blockSignals(true);
 
-	if (Start + Range.size() > Stop) ui->Plot->xAxis->setRange(Start, Stop);
-	else ui->Plot->xAxis->setRange(Start, Range.size(), Qt::AlignLeft);
+	if (ui->typeCombo->currentIndex() == 3)
+	{
+		const double Limit = (Samples / 2 + 1) / (Samples * (double(Stop - Start) / (Samples - 1)));
+
+		if (Range.size() > Limit) ui->Plot->xAxis->setRange(0, Limit);
+	}
+	else
+	{
+		if (Start + Range.size() > Stop) ui->Plot->xAxis->setRange(Start, Stop);
+		else ui->Plot->xAxis->setRange(Start, Range.size(), Qt::AlignLeft);
+	}
 
 	ui->Plot->xAxis->blockSignals(false);
 	ui->Plot->replot();
@@ -207,6 +243,12 @@ void ChartWidget::LegendCheckChanged(bool Status)
 
 void ChartWidget::ReplotCharts(void)
 {
+	if (!Finished)
+	{
+		Replot = true; return;
+	}
+	else Finished = false;
+
 	QList<QPair<QString, KLScript*>> Tasks;
 
 	for (const auto& Chart : Charts)
@@ -228,18 +270,29 @@ void ChartWidget::ReplotCharts(void)
 
 	connect(Watcher, &QFutureWatcher<RESULT>::resultReadyAt, boost::bind(&ChartWidget::PlotResults, this, Watcher, _1));
 	connect(Watcher, &QFutureWatcher<RESULT>::finished, Watcher, &QFutureWatcher<RESULT>::deleteLater);
+	connect(Watcher, &QFutureWatcher<RESULT>::finished, this, &ChartWidget::FinishReploting);
 
 	Watcher->setFuture(QtConcurrent::mapped(Tasks, Function));
 }
 
+void ChartWidget::ValueDraged(const QCPRange& New, const QCPRange& Old)
+{
+	if (ui->typeCombo->currentIndex() != 3) return;
+
+	if (New.lower < 0) ui->Plot->yAxis->setRange(0, Old.upper);
+}
+
 void ChartWidget::RangeDraged(const QCPRange& New, const QCPRange& Old)
 {
-	const double Lower = New.lower < Start ? Start : New.lower;
-	const double Upper = New.upper > Stop ? Stop : New.upper;
+	const double Highest = ui->typeCombo->currentIndex() == 3 ? (Samples / 2 + 1) / (Samples * (double(Stop - Start) / (Samples - 1))) : Stop;
+	const double Lowest = ui->typeCombo->currentIndex() == 3 ? 0 : Start;
+
+	const double Lower = New.lower < Lowest ? Lowest : New.lower;
+	const double Upper = New.upper > Highest ? Highest : New.upper;
 
 	ui->Plot->xAxis->blockSignals(true);
 
-	if (Lower == Start || Upper == Stop) ui->Plot->xAxis->setRange(Old);
+	if (Lower == Lowest || Upper == Highest) ui->Plot->xAxis->setRange(Old);
 	else ui->Plot->xAxis->setRange(Lower, Upper);
 
 	ui->Plot->xAxis->blockSignals(false);
@@ -271,7 +324,7 @@ void ChartWidget::PlotResults(QFutureWatcher<RESULT>* Watcher, int Index)
 	Data.Derivatives->setPen(Pen);
 
 	Data.Spectrum = ui->Plot->addGraph(ui->Plot->xAxis, ui->Plot->yAxis);
-	//Data.Spectrum->setData(Result.Arguments, Result.Derivatives);
+	Data.Spectrum->setData(Result.Freqargs, Result.Transform);
 	Data.Spectrum->setName(Result.Function);
 	Data.Spectrum->setPen(Pen);
 
@@ -289,6 +342,13 @@ void ChartWidget::PlotResults(QFutureWatcher<RESULT>* Watcher, int Index)
 	ui->Plot->replot();
 }
 
+void ChartWidget::FinishReploting()
+{
+	Finished = true;
+	if (Replot) ReplotCharts();
+	Replot = false;
+}
+
 void ChartWidget::ZoomCheckChanged(void)
 {
 	Qt::Orientations Orientation;
@@ -301,6 +361,9 @@ void ChartWidget::ZoomCheckChanged(void)
 
 void ChartWidget::PlotTypeChanged(int Type)
 {
+	bool View = Type == 3;
+	bool Rescale = View != Lastview;
+
 	for (auto Plot : Plots)
 	{
 		Plot.Values->setVisible(Type == 0);
@@ -309,7 +372,10 @@ void ChartWidget::PlotTypeChanged(int Type)
 		Plot.Spectrum->setVisible(Type == 3);
 	}
 
-	ui->Plot->replot();
+	Lastview = View;
+
+	if (!Rescale) ui->Plot->replot();
+	else ZoomButtonClicked();
 }
 
 void ChartWidget::SaveButtonClicked(void)

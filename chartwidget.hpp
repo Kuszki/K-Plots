@@ -21,7 +21,8 @@
 #ifndef CHARTWIDGET_HPP
 #define CHARTWIDGET_HPP
 
-#include "boost/function.hpp"
+#include <boost/function.hpp>
+#include <fftw3.h>
 
 #include <qcustomplot.h>
 
@@ -51,6 +52,8 @@ class ChartWidget : public QWidget
 		QVector<double> Integrals;
 		QVector<double> Derivatives;
 		QVector<double> Arguments;
+		QVector<double> Transform;
+		QVector<double> Freqargs;
 	};
 
 	private: struct CHART
@@ -74,9 +77,16 @@ class ChartWidget : public QWidget
 		QMap<QString, CHART> Plots;
 		QList<QString> Charts;
 
+		QCPRange plotRange;
+		QCPRange fftRange;
+
 		unsigned Samples;
 		double Start;
 		double Stop;
+
+		bool Lastview = false;
+		bool Finished = true;
+		bool Replot = false;
 
 	private:
 
@@ -110,8 +120,11 @@ class ChartWidget : public QWidget
 
 	private slots:
 
+		void ValueDraged(const QCPRange& New, const QCPRange& Old);
 		void RangeDraged(const QCPRange& New, const QCPRange& Old);
 		void PlotResults(QFutureWatcher<RESULT>* Watcher, int Index);
+
+		void FinishReploting(void);
 
 		void PlotTypeChanged(int Type);
 

@@ -61,7 +61,7 @@ FORMS		+=	mainwindow.ui \
 RESOURCES		+=	resources.qrc
 
 LIBS			+=	-L$$PWD/../build-KLLibs -lkllibs
-LIBS			+=	-lqcustomplot
+LIBS			+=	-lqcustomplot -lfftw3
 
 INCLUDEPATH	+=	$$PWD/../KLLibs
 
