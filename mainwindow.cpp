@@ -250,6 +250,11 @@ void MainWindow::RemoveFunction(const QString& Name)
 
 	if (Functions.Exists(Label)) Functions.Delete(Label);
 
+	for (const auto Chart: Plots) if (ChartWidget* Widget = qobject_cast<ChartWidget*>(Chart->widget()))
+	{
+		Widget->RemoveChart(Name);
+	}
+
 	ui->plotslistWidget->RemoveFunction(Name);
 
 	emit onReplotRequest();
