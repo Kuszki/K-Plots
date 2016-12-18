@@ -53,6 +53,8 @@ class ChartWidget : public QWidget
 		QVector<double> Derivatives;
 		QVector<double> Arguments;
 		QVector<double> Transform;
+		QVector<double> Realis;
+		QVector<double> Imaginaris;
 		QVector<double> Freqargs;
 	};
 
@@ -62,6 +64,8 @@ class ChartWidget : public QWidget
 		QCPGraph* Integrals = nullptr;
 		QCPGraph* Derivatives = nullptr;
 		QCPGraph* Spectrum = nullptr;
+		QCPGraph* Repart = nullptr;
+		QCPGraph* Impart = nullptr;
 	};
 
 	private:
@@ -120,13 +124,14 @@ class ChartWidget : public QWidget
 
 	private slots:
 
-		void ValueDraged(const QCPRange& New, const QCPRange& Old);
 		void RangeDraged(const QCPRange& New, const QCPRange& Old);
 		void PlotResults(QFutureWatcher<RESULT>* Watcher, int Index);
 
 		void FinishReploting(void);
 
 		void PlotTypeChanged(int Type);
+
+		void SpectrumTypeChanged(void);
 
 		void SaveButtonClicked(void);
 		void ZoomButtonClicked(void);

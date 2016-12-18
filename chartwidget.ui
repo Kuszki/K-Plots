@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>600</width>
+    <width>800</width>
     <height>300</height>
    </rect>
   </property>
@@ -87,6 +87,17 @@
       </spacer>
      </item>
      <item>
+      <widget class="QToolButton" name="spectrumButton">
+       <property name="icon">
+        <iconset theme="preferences-system">
+         <normaloff>.</normaloff>.</iconset>
+       </property>
+       <property name="popupMode">
+        <enum>QToolButton::InstantPopup</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QToolButton" name="saveButton">
        <property name="icon">
         <iconset theme="document-save">
@@ -97,7 +108,8 @@
      <item>
       <widget class="QToolButton" name="copyButton">
        <property name="icon">
-        <iconset theme="edit-copy"/>
+        <iconset theme="edit-copy">
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
@@ -123,6 +135,30 @@
     <widget class="QCustomPlot" name="Plot" native="true"/>
    </item>
   </layout>
+  <action name="actionAbs">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Abs</string>
+   </property>
+  </action>
+  <action name="actionRe">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Re</string>
+   </property>
+  </action>
+  <action name="actionIm">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Im</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>

@@ -66,6 +66,8 @@ const boost::function<ChartWidget::RESULT (KLScript*, QString, double, double, u
 	Result.Integrals.reserve(Samples);
 	Result.Derivatives.reserve(Samples);
 	Result.Transform.reserve(Samples);
+	Result.Realis.reserve(Samples);
+	Result.Imaginaris.reserve(Samples);
 	Result.Freqargs.reserve(Samples);
 
 	if (valuesWatcher.result())
@@ -106,15 +108,19 @@ const boost::function<ChartWidget::RESULT (KLScript*, QString, double, double, u
 
 			for (int i = 0; i < Size / 2 + 1; ++i)
 			{
-				const double Value = 2.0 * qSqrt(Complex[i][0] * Complex[i][0] + Complex[i][1] * Complex[i][1]) / Samples;
+				Result.Transform.append(2.0 * qSqrt(Complex[i][0] * Complex[i][0] + Complex[i][1] * Complex[i][1]) / Samples);
+				Result.Realis.append(2.0 * Complex[i][0] / Samples);
+				Result.Imaginaris.append(2.0 * Complex[i][1] / Samples);
 
-				Result.Transform.append(Value);
 				Result.Freqargs.append(i / (dt * Samples));
 			}
 
-			Result.Transform.first() /= 2;
 			fftw_destroy_plan(Plan);
 			fftw_free(Complex);
+
+			Result.Transform.first() /= 2;
+			Result.Realis.first() /= 2;
+			Result.Imaginaris.first() /= 2;
 
 		}
 
@@ -139,16 +145,27 @@ ChartWidget::ChartWidget(QWidget* Parent)
 {
 	ui->setupUi(this);
 
+	ui->spectrumButton->setMenu(new QMenu(tr("Spectrum options"), this));
+
+	ui->spectrumButton->menu()->addAction(ui->actionAbs);
+	ui->spectrumButton->menu()->addAction(ui->actionRe);
+	ui->spectrumButton->menu()->addAction(ui->actionIm);
+
 	ui->typeCombo->setMinimumWidth(ui->typeCombo->sizeHint().width() + 25);
 
 	ui->Plot->setInteraction(QCP::iRangeDrag, true);
 	ui->Plot->setInteraction(QCP::iRangeZoom, true);
 	ui->Plot->axisRect()->setupFullAxesBox();
 
+	ui->actionAbs->setChecked(true);
+
 	setAcceptDrops(true);
 
+	connect(ui->actionAbs, &QAction::toggled, this, &ChartWidget::SpectrumTypeChanged);
+	connect(ui->actionRe, &QAction::toggled, this, &ChartWidget::SpectrumTypeChanged);
+	connect(ui->actionIm, &QAction::toggled, this, &ChartWidget::SpectrumTypeChanged);
+
 	connect(ui->Plot->xAxis, SIGNAL(rangeChanged(QCPRange,QCPRange)), SLOT(RangeDraged(QCPRange,QCPRange)));
-	connect(ui->Plot->yAxis, SIGNAL(rangeChanged(QCPRange,QCPRange)), SLOT(ValueDraged(QCPRange,QCPRange)));
 }
 
 ChartWidget::~ChartWidget(void)
@@ -275,13 +292,6 @@ void ChartWidget::ReplotCharts(void)
 	Watcher->setFuture(QtConcurrent::mapped(Tasks, Function));
 }
 
-void ChartWidget::ValueDraged(const QCPRange& New, const QCPRange& Old)
-{
-	if (ui->typeCombo->currentIndex() != 3) return;
-
-	if (New.lower < 0) ui->Plot->yAxis->setRange(0, Old.upper);
-}
-
 void ChartWidget::RangeDraged(const QCPRange& New, const QCPRange& Old)
 {
 	const double Highest = ui->typeCombo->currentIndex() == 3 ? (Samples / 2 + 1) / (Samples * (double(Stop - Start) / (Samples - 1))) : Stop;
@@ -308,6 +318,11 @@ void ChartWidget::PlotResults(QFutureWatcher<RESULT>* Watcher, int Index)
 
 	Pen.setColor(Colors.isEmpty() ? Qt::black : Colors.takeFirst());
 
+	QPen Repen = Pen; QPen Impen = Pen;
+
+	Repen.setStyle(Qt::DashLine);
+	Impen.setStyle(Qt::DotLine);
+
 	Data.Values = ui->Plot->addGraph(ui->Plot->xAxis, ui->Plot->yAxis);
 	Data.Values->setData(Result.Arguments, Result.Values);
 	Data.Values->setName(Result.Function);
@@ -328,14 +343,28 @@ void ChartWidget::PlotResults(QFutureWatcher<RESULT>* Watcher, int Index)
 	Data.Spectrum->setName(Result.Function);
 	Data.Spectrum->setPen(Pen);
 
+	Data.Repart = ui->Plot->addGraph(ui->Plot->xAxis, ui->Plot->yAxis);
+	Data.Repart->setData(Result.Freqargs, Result.Realis);
+	Data.Repart->setName(Result.Function);
+	Data.Repart->setPen(Repen);
+
+	Data.Impart = ui->Plot->addGraph(ui->Plot->xAxis, ui->Plot->yAxis);
+	Data.Impart->setData(Result.Freqargs, Result.Imaginaris);
+	Data.Impart->setName(Result.Function);
+	Data.Impart->setPen(Impen);
+
 	Data.Values->setVisible(ui->typeCombo->currentIndex() == 0);
 	Data.Integrals->setVisible(ui->typeCombo->currentIndex() == 1);
 	Data.Derivatives->setVisible(ui->typeCombo->currentIndex() == 2);
 	Data.Spectrum->setVisible(ui->typeCombo->currentIndex() == 3);
+	Data.Repart->setVisible(ui->typeCombo->currentIndex() == 3);
+	Data.Impart->setVisible(ui->typeCombo->currentIndex() == 3);
 
 	Data.Integrals->removeFromLegend();
 	Data.Derivatives->removeFromLegend();
 	Data.Spectrum->removeFromLegend();
+	Data.Repart->removeFromLegend();
+	Data.Impart->removeFromLegend();
 
 	Plots.insert(Result.Function, Data);
 
@@ -369,13 +398,28 @@ void ChartWidget::PlotTypeChanged(int Type)
 		Plot.Values->setVisible(Type == 0);
 		Plot.Integrals->setVisible(Type == 1);
 		Plot.Derivatives->setVisible(Type == 2);
-		Plot.Spectrum->setVisible(Type == 3);
+
+		Plot.Spectrum->setVisible(Type == 3 && ui->actionAbs->isChecked());
+		Plot.Repart->setVisible(Type == 3 && ui->actionRe->isChecked());
+		Plot.Impart->setVisible(Type == 3 && ui->actionIm->isChecked());
 	}
 
 	Lastview = View;
 
 	if (!Rescale) ui->Plot->replot();
 	else ZoomButtonClicked();
+}
+
+void ChartWidget::SpectrumTypeChanged(void)
+{
+	for (auto Plot : Plots)
+	{
+		Plot.Spectrum->setVisible(ui->typeCombo->currentIndex() == 3 && ui->actionAbs->isChecked());
+		Plot.Repart->setVisible(ui->typeCombo->currentIndex() == 3 && ui->actionRe->isChecked());
+		Plot.Impart->setVisible(ui->typeCombo->currentIndex() == 3 && ui->actionIm->isChecked());
+	}
+
+	ui->Plot->replot();
 }
 
 void ChartWidget::SaveButtonClicked(void)
@@ -475,6 +519,8 @@ void ChartWidget::deletePlotable(const CHART& Plotable)
 	ui->Plot->removePlottable(Plotable.Integrals);
 	ui->Plot->removePlottable(Plotable.Spectrum);
 	ui->Plot->removePlottable(Plotable.Values);
+	ui->Plot->removePlottable(Plotable.Repart);
+	ui->Plot->removePlottable(Plotable.Impart);
 }
 
 void ChartWidget::fitValue(double& Value)
