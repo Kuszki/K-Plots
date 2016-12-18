@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>500</width>
+    <width>600</width>
     <height>300</height>
    </rect>
   </property>
@@ -95,6 +95,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QToolButton" name="copyButton">
+       <property name="icon">
+        <iconset theme="edit-copy"/>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QToolButton" name="fitButton">
        <property name="icon">
         <iconset theme="zoom-fit-best">
@@ -139,7 +146,7 @@
     </hint>
     <hint type="destinationlabel">
      <x>244</x>
-     <y>445</y>
+     <y>299</y>
     </hint>
    </hints>
   </connection>
@@ -150,11 +157,11 @@
    <slot>FitButtonClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>459</x>
+     <x>559</x>
      <y>232</y>
     </hint>
     <hint type="destinationlabel">
-     <x>703</x>
+     <x>599</x>
      <y>224</y>
     </hint>
    </hints>
@@ -166,12 +173,12 @@
    <slot>SaveButtonClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>429</x>
+     <x>499</x>
      <y>232</y>
     </hint>
     <hint type="destinationlabel">
      <x>446</x>
-     <y>382</y>
+     <y>299</y>
     </hint>
    </hints>
   </connection>
@@ -187,7 +194,7 @@
     </hint>
     <hint type="destinationlabel">
      <x>67</x>
-     <y>452</y>
+     <y>299</y>
     </hint>
    </hints>
   </connection>
@@ -198,12 +205,12 @@
    <slot>ZoomButtonClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>482</x>
-     <y>221</y>
+     <x>589</x>
+     <y>232</y>
     </hint>
     <hint type="destinationlabel">
-     <x>663</x>
-     <y>475</y>
+     <x>599</x>
+     <y>299</y>
     </hint>
    </hints>
   </connection>
@@ -219,7 +226,7 @@
     </hint>
     <hint type="destinationlabel">
      <x>210</x>
-     <y>349</y>
+     <y>299</y>
     </hint>
    </hints>
   </connection>
@@ -235,7 +242,7 @@
     </hint>
     <hint type="destinationlabel">
      <x>275</x>
-     <y>381</y>
+     <y>299</y>
     </hint>
    </hints>
   </connection>
@@ -251,7 +258,23 @@
     </hint>
     <hint type="destinationlabel">
      <x>339</x>
-     <y>493</y>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>copyButton</sender>
+   <signal>clicked()</signal>
+   <receiver>ChartWidget</receiver>
+   <slot>CopyButtonClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>512</x>
+     <y>227</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>512</x>
+     <y>494</y>
     </hint>
    </hints>
   </connection>
@@ -264,5 +287,6 @@
   <slot>ZoomButtonClicked()</slot>
   <slot>ZoomCheckChanged()</slot>
   <slot>ZoomyCheckChanged(bool)</slot>
+  <slot>CopyButtonClicked()</slot>
  </slots>
 </ui>

@@ -380,7 +380,37 @@ void ChartWidget::PlotTypeChanged(int Type)
 
 void ChartWidget::SaveButtonClicked(void)
 {
+	const QString Path = QFileDialog::getSaveFileName(this, tr("Select file to save data"), QString(), tr("CSV files (*.csv)"));
 
+	if (!Path.isEmpty())
+	{
+		QFile File(Path); if (File.open(QFile::WriteOnly | QFile::Text))
+		{
+			QTextStream Stream(&File);
+			const char Separator = ';';
+
+			Stream << tr("Time");
+			for (const auto& Name : Charts) Stream << Separator << Name;
+			Stream << endl;
+
+			QCPGraph* CHART::*Current =
+					ui->typeCombo->currentIndex() == 1 ? &CHART::Integrals :
+					ui->typeCombo->currentIndex() == 2 ? &CHART::Derivatives :
+					ui->typeCombo->currentIndex() == 3 ? &CHART::Spectrum :
+												  &CHART::Values;
+
+			for (const auto& Key : (Plots.first().*Current)->data()->keys())
+			{
+				Stream << Key;
+				for (const auto& Plot : Plots) Stream << Separator << (Plot.*Current)->data()->value(Key).value;
+				Stream << endl;
+			}
+		}
+		else
+		{
+			QMessageBox::warning(this, tr("Error"), tr("Can't open selected file"));
+		}
+	}
 }
 
 void ChartWidget::ZoomButtonClicked()
@@ -402,6 +432,21 @@ void ChartWidget::FitButtonClicked(void)
 	ui->Plot->replot();
 
 	ui->Plot->xAxis->blockSignals(false);
+}
+
+void ChartWidget::CopyButtonClicked(void)
+{
+	QSettings Settings("K-Plots");
+
+	Settings.beginGroup("Plot");
+
+	const int Width = Settings.value("width", 680).toInt();
+	const int Height = Settings.value("height", 400).toInt();
+	const int Scale = Settings.value("scale", 1.0).toDouble();
+
+	Settings.endGroup();
+
+	QApplication::clipboard()->setPixmap(ui->Plot->toPixmap(Width, Height, Scale));
 }
 
 void ChartWidget::dragEnterEvent(QDragEnterEvent* Event)

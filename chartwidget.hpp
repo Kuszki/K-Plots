@@ -131,6 +131,8 @@ class ChartWidget : public QWidget
 		void SaveButtonClicked(void);
 		void ZoomButtonClicked(void);
 		void FitButtonClicked(void);
+		void CopyButtonClicked(void);
+
 		void ZoomCheckChanged(void);
 
 	signals:
