@@ -356,9 +356,10 @@ void ChartWidget::PlotResults(QFutureWatcher<RESULT>* Watcher, int Index)
 	Data.Values->setVisible(ui->typeCombo->currentIndex() == 0);
 	Data.Integrals->setVisible(ui->typeCombo->currentIndex() == 1);
 	Data.Derivatives->setVisible(ui->typeCombo->currentIndex() == 2);
-	Data.Spectrum->setVisible(ui->typeCombo->currentIndex() == 3);
-	Data.Repart->setVisible(ui->typeCombo->currentIndex() == 3);
-	Data.Impart->setVisible(ui->typeCombo->currentIndex() == 3);
+
+	Data.Spectrum->setVisible(ui->typeCombo->currentIndex() == 3  && ui->actionAbs->isChecked());
+	Data.Repart->setVisible(ui->typeCombo->currentIndex() == 3 && ui->actionRe->isChecked());
+	Data.Impart->setVisible(ui->typeCombo->currentIndex() == 3 && ui->actionIm->isChecked());
 
 	Data.Integrals->removeFromLegend();
 	Data.Derivatives->removeFromLegend();

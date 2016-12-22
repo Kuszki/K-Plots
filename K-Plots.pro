@@ -36,7 +36,8 @@ SOURCES		+=	main.cpp \
 				functionswidget.cpp \
 				functionsdialog.cpp \
 				plotslistwidget.cpp \
-				chartwidget.cpp
+				chartwidget.cpp \
+				valuedelegate.cpp
 
 HEADERS		+=	mainwindow.hpp \
 				variableswidget.hpp \
@@ -46,7 +47,8 @@ HEADERS		+=	mainwindow.hpp \
 				functionswidget.hpp \
 				functionsdialog.hpp \
 				plotslistwidget.hpp \
-				chartwidget.hpp
+				chartwidget.hpp \
+				valuedelegate.hpp
 
 FORMS		+=	mainwindow.ui \
 				variableswidget.ui \
@@ -67,4 +69,4 @@ INCLUDEPATH	+=	$$PWD/../KLLibs
 
 TRANSLATIONS	+=	k-plots_pl.ts
 
-QMAKE_CXXFLAGS	+=	-s -std=c++14 -march=native
+QMAKE_CXXFLAGS	+=	-s -std=c++14

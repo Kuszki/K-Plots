@@ -40,6 +40,9 @@ MainWindow::MainWindow(QWidget* Parent)
 	Stop->setValue(10);
 	Samples->setValue(100);
 
+	Start->setDecimals(3);
+	Stop->setDecimals(3);
+
 	Start->setMinimumWidth(100);
 	Stop->setMinimumWidth(100);
 	Samples->setMinimumWidth(100);
@@ -147,8 +150,8 @@ void MainWindow::PlotSamplesChanged(int Count)
 
 void MainWindow::PlotRangeChanged(void)
 {
-	Start->setMaximum(Stop->value() - 1.0);
-	Stop->setMinimum(Start->value() + 1.0);
+	Start->setMaximum(Stop->value() - 0.01);
+	Stop->setMinimum(Start->value() + 0.01);
 
 	emit onRangeChanged(Start->value(), Stop->value());
 }

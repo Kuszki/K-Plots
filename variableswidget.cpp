@@ -27,6 +27,7 @@ VariablesWidget::VariablesWidget(const VALIDATOR& Bind, QWidget* Parent)
 	ui->setupUi(this);
 
 	ui->rightSpacer->changeSize(ui->addButton->sizeHint().width(), 0);
+	ui->Variables->setItemDelegateForColumn(1, new ValueDelegate(this));
 }
 
 VariablesWidget::~VariablesWidget(void)

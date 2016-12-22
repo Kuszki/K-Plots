@@ -18,68 +18,20 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef VARIABLESWIDGET_HPP
-#define VARIABLESWIDGET_HPP
-
-#include <boost/function.hpp>
-
-#include <QInputDialog>
-#include <QTableWidget>
-#include <QWidget>
-
-#include "variablesdialog.hpp"
 #include "valuedelegate.hpp"
-#include "titlewidget.hpp"
 
-namespace Ui
+ValueDelegate::ValueDelegate(QWidget* Parent)
+: QItemDelegate(Parent) {}
+
+ValueDelegate::~ValueDelegate(void) {}
+
+QWidget* ValueDelegate::createEditor(QWidget* Parent, const QStyleOptionViewItem& Option, const QModelIndex& Index) const
 {
-	class VariablesWidget;
+	QDoubleSpinBox* Spin = new QDoubleSpinBox(Parent);
+
+	Spin->setMinimum(-1000000.0);
+	Spin->setMaximum(1000000.0);
+	Spin->setDecimals(5);
+
+	return Spin;
 }
-
-class VariablesWidget : public QWidget
-{
-
-		Q_OBJECT
-
-	private:
-
-		using VALIDATOR = boost::function<bool (const QString&)>;
-
-		Ui::VariablesWidget* ui;
-
-		VALIDATOR Validator;
-
-	public:
-
-		explicit VariablesWidget(const VALIDATOR& Bind = [] (auto) { return true; },
-							QWidget* Parent = nullptr);
-		virtual ~VariablesWidget(void) override;
-
-		void SetTitleWidget(TitleWidget* Widget);
-
-		void SetValidator(const VALIDATOR& Bind);
-		void ResetValidator(void);
-
-	private slots:
-
-		void ListItemChanged(QTableWidgetItem* Item);
-
-		void SearchEditChanged(const QString& Text);
-
-		void AddButtonClicked(void);
-		void RemoveButtonClicked(void);
-
-	public slots:
-
-		void AddVariable(const QString& Name, double Value);
-
-	signals:
-
-		void onAddVariable(const QString&, double);
-		void onEditVariable(const QString&, double);
-		void onRenameVariable(const QString&, const QString&);
-		void onRemoveVariable(const QString&);
-
-};
-
-#endif // VARIABLESWIDGET_HPP
