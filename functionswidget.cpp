@@ -57,6 +57,11 @@ void FunctionsWidget::ResetValidator(void)
 	SetValidator([] (auto, auto, auto) { return QString(); });
 }
 
+void FunctionsWidget::ResetWidget(void)
+{
+	while (ui->Functions->count()) delete ui->Functions->takeItem(0);
+}
+
 void FunctionsWidget::ListItemChanged(QListWidgetItem* Item)
 {
 	FunctionsDialog* Dialog = new FunctionsDialog(Validator, this);

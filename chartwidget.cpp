@@ -188,6 +188,15 @@ void ChartWidget::SetPlotParams(double From, double To, unsigned Steps)
 	ui->Plot->xAxis->setRange(Start, Stop);
 }
 
+void ChartWidget::ResetWidget(void)
+{
+	for (const auto& Plot : Plots) deletePlotable(Plot);
+
+	Charts.clear(); Plots.clear();
+
+	ui->Plot->replot();
+}
+
 void ChartWidget::AddChart(const QString& Function)
 {
 	if (!Charts.contains(Function))

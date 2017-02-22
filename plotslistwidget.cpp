@@ -97,6 +97,16 @@ void PlotslistWidget::ResetValidator(void)
 	SetValidator([] (auto) { return true; });
 }
 
+void PlotslistWidget::ResetWidget(void)
+{
+	for (int i = 0; i < ui->Plots->topLevelItemCount(); ++i)
+	{
+		QTreeWidgetItem* Parent = ui->Plots->topLevelItem(i);
+
+		while (Parent->childCount()) delete Parent->takeChild(0);
+	}
+}
+
 void PlotslistWidget::TreeItemChanged(QTreeWidgetItem* Item)
 {
 	if (!Item->text(0).isEmpty() && Validator(Item->text(0)))

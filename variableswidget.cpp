@@ -58,6 +58,11 @@ void VariablesWidget::ResetValidator(void)
 	SetValidator([] (auto) { return true; });
 }
 
+void VariablesWidget::ResetWidget(void)
+{
+	while (ui->Variables->rowCount()) ui->Variables->removeRow(0);
+}
+
 void VariablesWidget::ListItemChanged(QTableWidgetItem* Item)
 {
 	const int Col = Item->column();

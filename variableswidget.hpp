@@ -60,6 +60,8 @@ class VariablesWidget : public QWidget
 		void SetValidator(const VALIDATOR& Bind);
 		void ResetValidator(void);
 
+		void ResetWidget(void);
+
 	private slots:
 
 		void ListItemChanged(QTableWidgetItem* Item);
