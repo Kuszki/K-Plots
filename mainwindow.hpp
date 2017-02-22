@@ -29,8 +29,11 @@
 
 #include <KLLibs.hpp>
 
+#include <QXmlStreamWriter>
+#include <QXmlStreamReader>
 #include <QDoubleSpinBox>
 #include <QMainWindow>
+#include <QFileDialog>
 #include <QSettings>
 #include <QSpinBox>
 #include <QDebug>
@@ -69,6 +72,9 @@ class MainWindow : public QMainWindow
 		virtual ~MainWindow(void) override;
 
 	private slots:
+
+		void SaveActionClicked(void);
+		void OpenActionClicked(void);
 
 		void PlotSamplesChanged(int Count);
 		void PlotRangeChanged(void);

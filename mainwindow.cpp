@@ -122,6 +122,8 @@ MainWindow::MainWindow(QWidget* Parent)
 	connect(ui->plotslistWidget, &PlotslistWidget::onRemovePlot, this, &MainWindow::RemovePlot);
 	connect(ui->plotslistWidget, &PlotslistWidget::onRemoveChart, this, &MainWindow::RemoveChart);
 
+	connect(ui->actionSave, &QAction::triggered, this, &MainWindow::SaveActionClicked);
+	connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::OpenActionClicked);
 	connect(ui->actionAbout, &QAction::triggered, About, &AboutDialog::show);
 
 	connect(Start, SIGNAL(valueChanged(double)), SLOT(PlotRangeChanged()));
@@ -139,6 +141,87 @@ MainWindow::~MainWindow(void)
 	Settings.endGroup();
 
 	delete ui;
+}
+
+void MainWindow::SaveActionClicked(void)
+{
+	QFile File(QFileDialog::getSaveFileName(this, tr("Save current environment into file"), QString(), tr("XML Files (*.xml)")));
+
+	if (File.open(QFile::WriteOnly | QFile::Text))
+	{
+		QXmlStreamWriter Writer(&File);
+
+		Writer.setAutoFormatting(true);
+		Writer.writeStartDocument();
+		Writer.writeStartElement("environment");
+
+		for (const auto& Variable : Variables)
+		{
+			Writer.writeStartElement("variable");
+			Writer.writeAttribute("name", QString(Variable.Index));
+			Writer.writeCharacters(QString::number(Variable.Value.ToNumber()));
+			Writer.writeEndElement();
+		}
+
+		for (const auto& Function : Functions)
+		{
+			Writer.writeStartElement("function");
+			Writer.writeAttribute("name", QString(Function.Index));
+			Writer.writeCharacters(QString(Function.Value));
+			Writer.writeEndElement();
+		}
+
+		Writer.writeEndDocument();
+	}
+}
+
+void MainWindow::OpenActionClicked(void)
+{
+	QFile File(QFileDialog::getOpenFileName(this, tr("Load environment from file"), QString(), tr("XML Files (*.xml)")));
+
+	if (File.open(QFile::ReadOnly | QFile::Text))
+	{
+		for (auto Dock : Plots) if (auto Plot = qobject_cast<ChartWidget*>(Dock->widget())) Plot->ResetWidget();
+
+		ui->functionsWidget->ResetWidget();
+		ui->variablesWidget->ResetWidget();
+		ui->plotslistWidget->ResetWidget();
+
+		QMap<QString, QString> functionsBuff;
+		QMap<QString, double> variablesBuff;
+
+		QXmlStreamReader Reader(&File);
+
+		while (Reader.readNextStartElement())
+		{
+			const QString Object = Reader.name().toString();
+
+			if (Object == "function")
+			{
+				const QString Name = Reader.attributes().value("name").toString();
+				const QString Code = Reader.readElementText();
+
+				if (!Name.isEmpty() && !Code.isEmpty()) functionsBuff.insert(Name, Code);
+			}
+			else if (Object == "variable")
+			{
+				const QString Name = Reader.attributes().value("name").toString();
+				const double Value = Reader.readElementText().toDouble();
+
+				if (!Name.isEmpty()) variablesBuff.insert(Name, Value);
+			}
+		}
+
+		for (auto i = variablesBuff.constBegin(); i != variablesBuff.constEnd(); ++i)
+		{
+			AddVariable(i.key(), i.value());
+		}
+
+		for (auto i = functionsBuff.constBegin(); i != functionsBuff.constEnd(); ++i)
+		{
+			AddFunction(i.key(), i.value());
+		}
+	}
 }
 
 void MainWindow::PlotSamplesChanged(int Count)
@@ -212,13 +295,11 @@ void MainWindow::AddFunction(const QString& Name, const QString& Code)
 	{
 		const QString Script = QString("define %1;\n%2\nend;").arg(Name).arg(Code);
 
-		KLScriptbinding Engine(&Variables);
+		bool OK; KLScriptbinding Engine(&Variables); Engine.Functions = Functions;
 
-		Engine.Functions = Functions;
+		if (OK = Engine.Validate(Script)) Functions.Insert(Function, Label);
 
-		if (Engine.Validate(Script)) Functions.Insert(Function, Label);
-
-		if (sender() != ui->functionsWidget)
+		if (OK && sender() != ui->functionsWidget)
 		{
 			ui->functionsWidget->blockSignals(true);
 			ui->functionsWidget->AddFunction(Name, Code);
