@@ -28,7 +28,6 @@ VariablesDialog::VariablesDialog(const VALIDATOR& Bind, QWidget* Parent)
 
 	ui->buttonBox->button(QDialogButtonBox::Save)->setEnabled(false);
 	ui->Name->setValidator(new QRegExpValidator(QRegExp("^[A-z]+[A-z0-9]*$"), this));
-	ui->Value->setValidator(new QDoubleValidator(this));
 }
 
 VariablesDialog::~VariablesDialog(void)
@@ -50,13 +49,12 @@ void VariablesDialog::DialogDataChanged(void)
 {
 	ui->buttonBox->button(QDialogButtonBox::Save)->setEnabled(
 				!ui->Name->text().isEmpty() &&
-				!ui->Value->text().isEmpty() &&
 				Validator(ui->Name->text()));
 }
 
 void VariablesDialog::accept()
 {
-	emit onEditFinished(ui->Name->text(), QLocale().toDouble(ui->Value->text()));
+	emit onEditFinished(ui->Name->text(), ui->Value->value());
 
 	QDialog::accept();
 }
@@ -64,7 +62,7 @@ void VariablesDialog::accept()
 void VariablesDialog::open(const QString& Name, double Value)
 {
 	ui->Name->setText(Name);
-	ui->Value->setText(QLocale().toString(Value));
+	ui->Value->setValue(Value);
 
 	QDialog::open();
 }
@@ -72,7 +70,7 @@ void VariablesDialog::open(const QString& Name, double Value)
 void VariablesDialog::open(void)
 {
 	ui->Name->clear();
-	ui->Value->clear();
+	ui->Value->setValue(0.0);
 
 	QDialog::open();
 }

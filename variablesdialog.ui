@@ -23,9 +23,6 @@
      <property name="text">
       <string>Value</string>
      </property>
-     <property name="buddy">
-      <cstring>Value</cstring>
-     </property>
     </widget>
    </item>
    <item row="0" column="1">
@@ -65,13 +62,22 @@
     </spacer>
    </item>
    <item row="1" column="1">
-    <widget class="QLineEdit" name="Value"/>
+    <widget class="QDoubleSpinBox" name="Value">
+     <property name="decimals">
+      <number>5</number>
+     </property>
+     <property name="minimum">
+      <double>-100000.000000000000000</double>
+     </property>
+     <property name="maximum">
+      <double>100000.000000000000000</double>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
  <tabstops>
   <tabstop>Name</tabstop>
-  <tabstop>Value</tabstop>
  </tabstops>
  <resources/>
  <connections>
@@ -120,22 +126,6 @@
     <hint type="destinationlabel">
      <x>449</x>
      <y>32</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>Value</sender>
-   <signal>textChanged(QString)</signal>
-   <receiver>VariablesDialog</receiver>
-   <slot>DialogDataChanged()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>216</x>
-     <y>52</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>563</x>
-     <y>79</y>
     </hint>
    </hints>
   </connection>
