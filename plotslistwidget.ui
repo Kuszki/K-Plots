@@ -28,11 +28,6 @@
      <attribute name="headerVisible">
       <bool>false</bool>
      </attribute>
-     <column>
-      <property name="text">
-       <string>Plot</string>
-      </property>
-     </column>
     </widget>
    </item>
    <item row="1" column="0">

@@ -288,12 +288,11 @@ Niniejszy program rozpowszechniany jest z nadzieją, iż będzie on użyteczny �
 <context>
     <name>PlotslistWidget</name>
     <message>
-        <location filename="plotslistwidget.ui" line="33"/>
         <source>Plot</source>
-        <translation>Wykres</translation>
+        <translation type="vanished">Wykres</translation>
     </message>
     <message>
-        <location filename="plotslistwidget.ui" line="43"/>
+        <location filename="plotslistwidget.ui" line="38"/>
         <source>Search</source>
         <translation>Szukaj</translation>
     </message>
