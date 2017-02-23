@@ -155,6 +155,10 @@ void MainWindow::SaveActionClicked(void)
 		Writer.writeStartDocument();
 		Writer.writeStartElement("environment");
 
+		Writer.writeAttribute("start", QString::number(Start->value()));
+		Writer.writeAttribute("stop", QString::number(Stop->value()));
+		Writer.writeAttribute("samples", QString::number(Samples->value()));
+
 		for (const auto& Variable : Variables)
 		{
 			Writer.writeStartElement("variable");
@@ -187,6 +191,9 @@ void MainWindow::OpenActionClicked(void)
 		ui->variablesWidget->ResetWidget();
 		ui->plotslistWidget->ResetWidget();
 
+		Start->setMinimum(-10000.0);
+		Stop->setMaximum(10000.0);
+
 		QMap<QString, QString> functionsBuff;
 		QMap<QString, double> variablesBuff;
 
@@ -196,7 +203,13 @@ void MainWindow::OpenActionClicked(void)
 		{
 			const QString Object = Reader.name().toString();
 
-			if (Object == "function")
+			if (Object == "environment")
+			{
+				Start->setValue(Reader.attributes().value("start").toDouble());
+				Stop->setValue(Reader.attributes().value("stop").toDouble());
+				Samples->setValue(Reader.attributes().value("samples").toUInt());
+			}
+			else if (Object == "function")
 			{
 				const QString Name = Reader.attributes().value("name").toString();
 				const QString Code = Reader.readElementText();
@@ -210,6 +223,7 @@ void MainWindow::OpenActionClicked(void)
 
 				if (!Name.isEmpty()) variablesBuff.insert(Name, Value);
 			}
+			else Reader.skipCurrentElement();
 		}
 
 		for (auto i = variablesBuff.constBegin(); i != variablesBuff.constEnd(); ++i)

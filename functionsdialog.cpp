@@ -45,7 +45,7 @@ void FunctionsDialog::ResetValidator(void)
 	SetValidator([] (auto, auto, auto) { return QString(); });
 }
 
-void FunctionsDialog::DialogDataChanged()
+void FunctionsDialog::DialogDataChanged(void)
 {
 	ui->buttonBox->button(QDialogButtonBox::Save)->setEnabled(
 				!ui->Name->text().isEmpty() &&
