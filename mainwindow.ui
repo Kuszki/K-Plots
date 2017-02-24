@@ -17,6 +17,9 @@
    <iconset theme="utilities-system-monitor">
     <normaloff>.</normaloff>.</iconset>
   </property>
+  <property name="documentMode">
+   <bool>true</bool>
+  </property>
   <property name="dockNestingEnabled">
    <bool>true</bool>
   </property>
