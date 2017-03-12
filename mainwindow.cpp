@@ -197,6 +197,9 @@ void MainWindow::OpenActionClicked(void)
 		Functions.Clean();
 		Variables.Clean();
 
+		Variables.Add("t", KLVariables::NUMBER, KLVariables::KLSCALLBACK(), false);
+		Variables.Add("dt", KLVariables::NUMBER, KLVariables::KLSCALLBACK(), false);
+
 		QMap<QString, QString> functionsBuff;
 		QMap<QString, double> variablesBuff;
 
