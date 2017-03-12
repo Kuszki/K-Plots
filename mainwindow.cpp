@@ -194,6 +194,9 @@ void MainWindow::OpenActionClicked(void)
 		Start->setMinimum(-10000.0);
 		Stop->setMaximum(10000.0);
 
+		Functions.Clean();
+		Variables.Clean();
+
 		QMap<QString, QString> functionsBuff;
 		QMap<QString, double> variablesBuff;
 
