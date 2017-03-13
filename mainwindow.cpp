@@ -97,7 +97,7 @@ MainWindow::MainWindow(QWidget* Parent)
 
 			if (Engine.Validate(Script)) return QString();
 			else return tr("Error in line %1: %2")
-					.arg(Engine.GetLine())
+					.arg(Engine.GetLine() - 1)
 					.arg(Engine.GetMessage());
 		}
 	});
