@@ -77,6 +77,8 @@ class ChartWidget : public QWidget
 
 		Ui::ChartWidget* ui;
 
+		QMutex Synchronizer;
+
 		QVector<QColor> Colors;
 		QMap<QString, CHART> Plots;
 		QList<QString> Charts;

@@ -135,7 +135,7 @@ const boost::function<ChartWidget::RESULT (KLScript*, QString, double, double, u
 };
 
 ChartWidget::ChartWidget(QWidget* Parent)
-: QWidget(Parent), ui(new Ui::ChartWidget), Colors(
+: QWidget(Parent), ui(new Ui::ChartWidget), Synchronizer(QMutex::Recursive), Colors(
 {
 	Qt::red, Qt::blue, Qt::green,
 	Qt::darkRed, Qt::darkBlue, Qt::darkGreen,
@@ -269,11 +269,15 @@ void ChartWidget::LegendCheckChanged(bool Status)
 
 void ChartWidget::ReplotCharts(void)
 {
+	Synchronizer.lock();
+
 	if (!Finished)
 	{
 		Replot = true; return;
 	}
 	else Finished = false;
+
+	Synchronizer.unlock();
 
 	QList<QPair<QString, KLScript*>> Tasks;
 
@@ -381,8 +385,10 @@ void ChartWidget::PlotResults(QFutureWatcher<RESULT>* Watcher, int Index)
 	ui->Plot->replot();
 }
 
-void ChartWidget::FinishReploting()
+void ChartWidget::FinishReploting(void)
 {
+	QMutexLocker Locker(&Synchronizer);
+
 	Finished = true;
 	if (Replot) ReplotCharts();
 	Replot = false;
